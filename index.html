@@ -2,60 +2,44 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Certificate Approval Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Login</title>
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    :root {
-      font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
-      font-weight: 400;
-      color-scheme: light dark;
-      color: rgba(255, 255, 255, 0.87);
-      background-color: #242424;
-      --primary-color: #646cff;
-      --success-color: #22c55e;
-      --danger-color: #ef4444;
-      --warning-color: #f59e0b;
-      --bg-secondary: #2d2d2d;
-      --bg-card: #333;
-      --border-color: #404040;
-      --text-primary: rgba(255, 255, 255, 0.87);
-    }
-
     body {
       margin: 0;
       min-height: 100vh;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
       display: flex;
       justify-content: center;
       align-items: center;
+      font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
       flex-direction: column;
     }
 
     #loginSection {
       display: flex;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
+      align-items: center;
       gap: 1rem;
     }
   </style>
 </head>
 
 <body>
-  <!-- Google Login Section -->
   <div id="loginSection">
     <h1>🔐 Login to Continue</h1>
+
+    <!-- Google Sign-In -->
     <div id="g_id_onload"
          data-client_id="YOUR_GOOGLE_CLIENT_ID"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleCredentialResponse"
+         data-ux_mode="redirect"
+         data-login_uri="https://fx818.github.io/frontend_calibrator/login.html"
          data-auto_prompt="false">
     </div>
 
@@ -69,26 +53,30 @@
   </div>
 
   <script>
-    const API_BASE_URL = "http://127.0.0.1:8000"; // your backend URL
+    const API_BASE_URL = "http://127.0.0.1:8000"; // your backend
 
-    async function handleCredentialResponse(response) {
-      const id_token = response.credential;
+    async function handleRedirectLogin() {
+      const params = new URLSearchParams(window.location.search);
+      const credential = params.get("credential");
+
+      if (!credential) return; // No login attempt
 
       try {
+        // Send token to backend for verification
         const res = await fetch(`${API_BASE_URL}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: id_token })
+          body: JSON.stringify({ token: credential })
         });
 
-        if (!res.ok) throw new Error("Failed to verify token");
+        if (!res.ok) throw new Error("Token verification failed");
 
-        const data = await res.json();
+        const userData = await res.json();
 
-        // Save session if needed
-        localStorage.setItem("user", JSON.stringify(data));
+        // Save user info for page.html
+        localStorage.setItem("user", JSON.stringify(userData));
 
-        // Redirect after successful login
+        // Redirect to your target page
         window.location.href = "https://fx818.github.io/frontend_calibrator/page.html";
 
       } catch (err) {
@@ -96,13 +84,7 @@
       }
     }
 
-    // Auto-login if session exists
-    window.onload = () => {
-      const savedUser = localStorage.getItem("user");
-      if (savedUser) {
-        window.location.href = "https://fx818.github.io/frontend_calibrator/page.html";
-      }
-    };
+    window.onload = handleRedirectLogin;
   </script>
 </body>
 
