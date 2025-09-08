@@ -31,36 +31,18 @@
       margin: 0;
       min-height: 100vh;
       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
     }
 
     #loginSection {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       flex-direction: column;
       gap: 1rem;
-    }
-
-    #userInfo {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .user-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      margin-bottom: 0.5rem;
-    }
-
-    .btn-logout {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 0.5rem;
-      background: var(--danger-color);
-      color: white;
-      cursor: pointer;
     }
   </style>
 </head>
@@ -70,9 +52,9 @@
   <div id="loginSection">
     <h1>🔐 Login to Continue</h1>
     <div id="g_id_onload"
-         data-client_id="478641910458-nki6rpg1rfgg2d0fnc4ku45vafj9gkvk.apps.googleusercontent.com"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID"
          data-context="signin"
-         data-ux_mode="popup"   <!-- ✅ FORCE POPUP MODE -->
+         data-ux_mode="popup"
          data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
@@ -86,13 +68,9 @@
     </div>
   </div>
 
-  <!-- Dashboard Section (hidden until login) -->
-  <div id="app" style="display:none;"></div>
-
   <script>
-    const API_BASE_URL = "http://127.0.0.1:8000"; // your backend
+    const API_BASE_URL = "http://127.0.0.1:8000"; // your backend URL
 
-    // Handle Google Login Response
     async function handleCredentialResponse(response) {
       const id_token = response.credential;
 
@@ -107,56 +85,25 @@
 
         const data = await res.json();
 
-        // Save session
+        // Save session if needed
         localStorage.setItem("user", JSON.stringify(data));
 
-        // Show dashboard
-        showDashboard(data);
+        // Redirect after successful login
+        window.location.href = "https://fx818.github.io/frontend_calibrator/page.html";
 
       } catch (err) {
         alert("Login failed: " + err.message);
       }
     }
 
-    // Show Dashboard
-    function showDashboard(userData) {
-      document.getElementById("loginSection").style.display = "none";
-      const app = document.getElementById("app");
-      app.style.display = "block";
-
-      app.innerHTML = `
-        <div class="dashboard">
-          <header class="dashboard-header" style="background: var(--bg-secondary); padding: 1rem; display:flex; justify-content:space-between; align-items:center;">
-            <h1>Certificate Approval Dashboard</h1>
-            <div id="userInfo">
-              <img src="${userData.picture}" alt="avatar" class="user-avatar"/>
-              <p>${userData.name}</p>
-              <p>${userData.email}</p>
-              <button class="btn-logout" onclick="logout()">Logout</button>
-            </div>
-          </header>
-          <main class="dashboard-main" style="padding:2rem;">
-            <h2>Welcome, ${userData.name} 👋</h2>
-            <p>You are now logged in with Google.</p>
-          </main>
-        </div>
-      `;
-    }
-
-    // Logout function
-    function logout() {
-      localStorage.removeItem("user");
-      document.getElementById("app").style.display = "none";
-      document.getElementById("loginSection").style.display = "flex";
-    }
-
     // Auto-login if session exists
     window.onload = () => {
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
-        showDashboard(JSON.parse(savedUser));
+        window.location.href = "https://fx818.github.io/frontend_calibrator/page.html";
       }
     };
   </script>
 </body>
+
 </html>
