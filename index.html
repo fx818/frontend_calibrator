@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,16 +29,15 @@
     }
   </style>
 </head>
-
 <body>
   <div id="loginSection">
     <h1>🔐 Login to Continue</h1>
 
     <!-- Google Sign-In -->
     <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_CLIENT_ID"
+         data-client_id="478641910458-nki6rpg1rfgg2d0fnc4ku45vafj9gkvk.apps.googleusercontent.com"
          data-ux_mode="redirect"
-         data-login_uri="https://fx818.github.io/frontend_calibrator/login.html"
+         data-login_uri="https://fx818.github.io/frontend_calibrator/"
          data-auto_prompt="false">
     </div>
 
@@ -53,13 +51,13 @@
   </div>
 
   <script>
-    const API_BASE_URL = "http://127.0.0.1:8000"; // your backend
+    const API_BASE_URL = "http://127.0.0.1:8000"; // your FastAPI backend
 
     async function handleRedirectLogin() {
       const params = new URLSearchParams(window.location.search);
       const credential = params.get("credential");
 
-      if (!credential) return; // No login attempt
+      if (!credential) return; // no login attempt
 
       try {
         // Send token to backend for verification
@@ -76,8 +74,8 @@
         // Save user info for page.html
         localStorage.setItem("user", JSON.stringify(userData));
 
-        // Redirect to your target page
-        window.location.href = "https://fx818.github.io/frontend_calibrator/page.html";
+        // Redirect to your main page
+        window.location.href = "https://fx818.github.io/frontend_calibrator/page2.html";
 
       } catch (err) {
         alert("Login failed: " + err.message);
@@ -87,5 +85,4 @@
     window.onload = handleRedirectLogin;
   </script>
 </body>
-
 </html>
