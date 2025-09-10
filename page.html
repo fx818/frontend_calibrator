@@ -253,6 +253,8 @@
             </header>
             <main class="dashboard-main">
               <div class="action-panel">
+                <input type="email" id="userEmail" placeholder="Enter Your Email" class="btn"
+                  style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="email" id="vendorEmail" placeholder="Enter Vendor Email" class="btn"
                   style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="number" id="numEmails" placeholder="Number of Emails" min="1" class="btn"
@@ -308,42 +310,31 @@
           this.showToast('Failed to connect to API', 'error');
         }
       }
-      async getUsername() {
-          const res = await fetch(`${this.apiBaseUrl}/me`, { credentials: "include" });
-          if (res.status === 401) {
-              // Redirect user to login page
-              window.location.href = `${this.apiBaseUrl}/login`;
-              return null;
-          }
-          const data = await res.json();
-          return data.email;
-      }
 
       async extractCertificates() {
-          const username = this.getUsername();
-          if (!username) return; // session missing → already redirected
-      
-          const vendorEmail = document.getElementById('vendorEmail').value.trim();
-          const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
-          if (!vendorEmail || isNaN(numEmails) || numEmails <= 0) {
-              this.showToast("Please enter valid vendor email and number of emails.", "error");
-              return;
-          }
-      
-          this.setLoading(true);
-          try {
-              const response = await fetch(`${this.apiBaseUrl}/extract_certificates`, {
-                  method: 'POST',
-                  headers: { "Content-Type": "application/json" },
-                  credentials: "include", // send session cookie
-                  body: JSON.stringify({ username, vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
-              });
-              const data = await response.json();
-              if (response.ok) this.handleExtractResponse(data);
-              else throw new Error(data.message || "Failed to extract");
-          } catch (error) {
-              this.showToast(`Error: ${error.message}`, 'error');
-          } finally { this.setLoading(false); }
+        const userEmail = document.getElementById('userEmail').value.trim();
+        const vendorEmail = document.getElementById('vendorEmail').value.trim();
+        const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
+        
+        if (!userEmail || !vendorEmail || isNaN(numEmails) || numEmails <= 0) {
+          this.showToast("Please enter a valid user email, vendor email, and number of emails.", "error");
+          return;
+        }
+
+        this.setLoading(true);
+        try {
+          const response = await fetch(`${this.apiBaseUrl}/extract_certificates`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username: userEmail, vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
+          });
+          const data = await response.json();
+          if (response.ok) this.handleExtractResponse(data);
+          else throw new Error(data.message || "Failed to extract");
+        } catch (error) {
+          this.showToast(`Error: ${error.message}`, 'error');
+        } finally { this.setLoading(false); }
       }
 
       handleExtractResponse(data) {
@@ -438,9 +429,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
