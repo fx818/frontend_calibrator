@@ -309,7 +309,7 @@
         }
       }
       async extractCertificates() {
-        const res = await fetch(`${apiBaseUrl}/me`);
+        const res = await fetch(`${this.apiBaseUrl}/me`);
         const data = await res.json();
         const username = data.email;
         const vendorEmail = document.getElementById('vendorEmail').value.trim();
@@ -427,5 +427,6 @@
 </body>
 
 </html>
+
 
 
