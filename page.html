@@ -309,32 +309,32 @@
         }
       }
       async extractCertificates() {
-        const res = await fetch(`${this.apiBaseUrl}/me`);
-        const data = await res.json();
-        const username = data.email;
-        const vendorEmail = document.getElementById('vendorEmail').value.trim();
-        const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
-        if (!vendorEmail || isNaN(numEmails) || numEmails <= 0) {
-          this.showToast("Please enter valid username, vendor email and number of emails.", "error");
-          return;
-        }
-        this.setLoading(true);
-        try {
-          const response = await fetch(`${this.apiBaseUrl}/extract_certificates`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username, vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
-          });
-          const data = await response.json();
-          if (response.ok) {
-            this.certificates = data.raw_certs || [];
-            this.handleExtractResponse(data);
-            this.showToast(data.message || 'Certificates extracted', 'success');
-          } else throw new Error(data.message || 'Failed to extract');
-        } catch (error) {
-          this.showToast(`Error: ${error.message}`, 'error');
-        } finally { this.setLoading(false); }
+          const username = await getUsername();
+          if (!username) return; // session missing → already redirected
+      
+          const vendorEmail = document.getElementById('vendorEmail').value.trim();
+          const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
+          if (!vendorEmail || isNaN(numEmails) || numEmails <= 0) {
+              this.showToast("Please enter valid vendor email and number of emails.", "error");
+              return;
+          }
+      
+          this.setLoading(true);
+          try {
+              const response = await fetch(`${this.apiBaseUrl}/extract_certificates`, {
+                  method: 'POST',
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include", // send session cookie
+                  body: JSON.stringify({ username, vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
+              });
+              const data = await response.json();
+              if (response.ok) this.handleExtractResponse(data);
+              else throw new Error(data.message || "Failed to extract");
+          } catch (error) {
+              this.showToast(`Error: ${error.message}`, 'error');
+          } finally { this.setLoading(false); }
       }
+
       handleExtractResponse(data) {
         const resultsSection = document.getElementById('resultsSection');
         const certificateList = document.getElementById('certificateList');
@@ -427,6 +427,7 @@
 </body>
 
 </html>
+
 
 
 
