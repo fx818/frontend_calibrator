@@ -253,8 +253,6 @@
             </header>
             <main class="dashboard-main">
               <div class="action-panel">
-                <input type="text" id="username" placeholder="Enter Unique UserID" class="btn"
-                  style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="email" id="vendorEmail" placeholder="Enter Vendor Email" class="btn"
                   style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="number" id="numEmails" placeholder="Number of Emails" min="1" class="btn"
@@ -311,7 +309,9 @@
         }
       }
       async extractCertificates() {
-        const username = document.getElementById('username').value.trim();
+        const res = await fetch(`${API_BASE}/me`);
+        const data = await res.json();
+        const username = data.email;
         const vendorEmail = document.getElementById('vendorEmail').value.trim();
         const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
         if (!vendorEmail || isNaN(numEmails) || numEmails <= 0) {
@@ -427,3 +427,4 @@
 </body>
 
 </html>
+
