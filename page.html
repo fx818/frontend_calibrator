@@ -308,6 +308,17 @@
           this.showToast('Failed to connect to API', 'error');
         }
       }
+      async function getUsername() {
+          const res = await fetch(`${this.apiBaseUrl}/me`, { credentials: "include" });
+          if (res.status === 401) {
+              // Redirect user to login page
+              window.location.href = `${this.apiBaseUrl}/login`;
+              return null;
+          }
+          const data = await res.json();
+          return data.email;
+      }
+
       async extractCertificates() {
           const username = await getUsername();
           if (!username) return; // session missing → already redirected
@@ -427,6 +438,7 @@
 </body>
 
 </html>
+
 
 
 
