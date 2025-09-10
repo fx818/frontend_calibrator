@@ -253,6 +253,8 @@
             </header>
             <main class="dashboard-main">
               <div class="action-panel">
+                <input type="text" id="username" placeholder="Enter Unique UserID" class="btn"
+                  style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="email" id="vendorEmail" placeholder="Enter Vendor Email" class="btn"
                   style="margin-right: 1rem; padding: 0.75rem; border-radius: 0.5rem; border:1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 250px;" required />
                 <input type="number" id="numEmails" placeholder="Number of Emails" min="1" class="btn"
@@ -309,10 +311,11 @@
         }
       }
       async extractCertificates() {
+        const username = document.getElementById('username').value.trim();
         const vendorEmail = document.getElementById('vendorEmail').value.trim();
         const numEmails = parseInt(document.getElementById('numEmails').value.trim(), 10);
         if (!vendorEmail || isNaN(numEmails) || numEmails <= 0) {
-          this.showToast("Please enter valid vendor email and number of emails.", "error");
+          this.showToast("Please enter valid username, vendor email and number of emails.", "error");
           return;
         }
         this.setLoading(true);
@@ -320,7 +323,7 @@
           const response = await fetch(`${this.apiBaseUrl}/extract_certificates`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
+            body: JSON.stringify({ username: username, vendor_email: vendorEmail, number_of_email_to_fetch: numEmails })
           });
           const data = await response.json();
           if (response.ok) {
