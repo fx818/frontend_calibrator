@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Extractor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+    <div class="w-full max-w-2xl p-8 space-y-8 bg-white rounded-lg shadow-lg">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Certificate Extractor</h1>
+            <p class="mt-2 text-sm text-gray-500">Log in to fetch and process your vendor certificates.</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="flex flex-col items-center justify-center space-y-4">
+            <h2 class="text-xl font-semibold text-gray-700">Login with Google</h2>
+            <button id="loginBtn" class="flex items-center px-6 py-3 font-medium text-white transition-colors bg-blue-600 rounded-full shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Google_Logo.svg" alt="Google logo" class="w-6 h-6 mr-3">
+                Sign in with Google
+            </button>
+        </div>
+
+        <!-- App Section -->
+        <div id="appSection" class="hidden">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm font-medium text-gray-600">Logged in as: <span id="userEmail" class="font-bold"></span></p>
+                <p id="statusMsg" class="mt-1 text-sm text-blue-600"></p>
+            </div>
+            
+            <div class="mt-6">
+                <h2 class="text-xl font-semibold text-gray-700">Fetch Certificates</h2>
+                <button id="fetchBtn" class="w-full px-6 py-3 mt-4 font-medium text-white transition-colors bg-emerald-600 rounded-full shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                    Extract Certificates
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden mt-8">
+                <h2 class="text-xl font-semibold text-gray-700">Extracted Certificates</h2>
+                <ul id="certificatesList" class="mt-4 space-y-2">
+                    <!-- Certificates will be added here -->
+                </ul>
+                <button id="approvalBtn" class="hidden w-full px-6 py-3 mt-4 font-medium text-white transition-colors bg-emerald-600 rounded-full shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                    Approve and Save
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_BASE = "http://127.0.0.1:8000"; // Your backend API URL
+
+        const loginBtn = document.getElementById("loginBtn");
+        const fetchBtn = document.getElementById("fetchBtn");
+        const approvalBtn = document.getElementById("approvalBtn");
+        const loginSection = document.getElementById("loginSection");
+        const appSection = document.getElementById("appSection");
+        const userEmailSpan = document.getElementById("userEmail");
+        const statusMsg = document.getElementById("statusMsg");
+        const resultsSection = document.getElementById("resultsSection");
+        const certificatesList = document.getElementById("certificatesList");
+
+        // Simulate a call to your backend's login endpoint
+        loginBtn.onclick = () => {
+            window.location.href = `${API_BASE}/login`;
+        };
+
+        // Simulate calling the /extract_certificates endpoint
+        fetchBtn.onclick = async () => {
+            statusMsg.textContent = "Fetching and extracting certificates... Please wait.";
+            fetchBtn.disabled = true;
+            certificatesList.innerHTML = '';
+            resultsSection.classList.add('hidden');
+            approvalBtn.classList.add('hidden');
+
+            try {
+                // This simulates the POST request to your backend
+                const response = await fetch(`${API_BASE}/extract_certificates`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const data = await response.json();
+
+                if (data.status === "Waiting") {
+                    statusMsg.textContent = "Certificates extracted successfully. Awaiting your approval.";
+                    resultsSection.classList.remove('hidden');
+                    approvalBtn.classList.remove('hidden');
+                    renderCertificates(data.certificates);
+                } else if (data.status === "Completed") {
+                    statusMsg.textContent = "Certificates processed and saved to the database.";
+                    resultsSection.classList.remove('hidden');
+                    renderCertificates(data.certificates);
+                } else {
+                    statusMsg.textContent = `Error: ${data.message}`;
+                }
+            } catch (error) {
+                statusMsg.textContent = `Failed to connect to the backend: ${error.message}. Please ensure the backend server is running.`;
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        };
+
+        // Simulate the approval process
+        approvalBtn.onclick = async () => {
+            statusMsg.textContent = "Sending approval to backend...";
+            approvalBtn.disabled = true;
+
+            try {
+                // This simulates the POST request to your backend
+                const response = await fetch(`${API_BASE}/approval?user_input=yes`, {
+                    method: 'POST',
+                });
+                const data = await response.json();
+                
+                if (data.status === "Approved") {
+                    statusMsg.textContent = "Approval received. Certificates saved to the database.";
+                    approvalBtn.classList.add('hidden');
+                } else {
+                    statusMsg.textContent = "Approval rejected or failed. Please try again.";
+                }
+            } catch (error) {
+                statusMsg.textContent = `Failed to send approval: ${error.message}. Please ensure the backend server is running.`;
+            } finally {
+                approvalBtn.disabled = false;
+            }
+        };
+
+        function renderCertificates(certs) {
+            if (certs.length === 0) {
+                certificatesList.innerHTML = '<li class="text-gray-500">No certificates found with attachments.</li>';
+                return;
+            }
+            certs.forEach(cert => {
+                const li = document.createElement('li');
+                li.className = 'p-4 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center justify-between';
+                li.innerHTML = `
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-gray-800">Certificate Number:</p>
+                        <p class="mt-1 text-lg font-bold text-gray-900">${cert.certificate_number || 'N/A'}</p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${cert.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
+                        ${cert.status.toUpperCase()}
+                    </span>
+                `;
+                certificatesList.appendChild(li);
+            });
+        }
+
+        // Check user status on page load and handle the UI logic.
+        // The fetchUserStatus() function was removed to prevent a network
+        // call on page load that could lead to a 'Failed to fetch' error.
+        window.onload = () => {
+            // Initially show the login section and hide the app section
+            loginSection.classList.remove('hidden');
+            appSection.classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
