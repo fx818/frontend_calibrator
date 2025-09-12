@@ -344,7 +344,7 @@
         const responseSection = document.getElementById('responseSection');
         const responseContent = document.getElementById('responseContent');
         // Add this line to store the certificates array from the API response.
-        this.certificates = data.extracted_certificates || [];
+        this.certificates = data.raw_certs || [];
         resultsSection.style.display = 'block';
         if (this.certificates.length > 0) this.renderCertificates(this.certificates);
         else {
@@ -431,5 +431,6 @@
 </body>
 
 </html>
+
 
 
