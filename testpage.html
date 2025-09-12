@@ -261,8 +261,8 @@
                   <div class="approval-card">
                     <h3>⚠️ Approval Required</h3>
                     <p>Do you approve pushing these certificates to calendar?</p>
-                    <button id="approveBtn" class="btn btn-success">✅ Approve</button>
-                    <button id="rejectBtn" class="btn btn-danger">❌ Reject</button>
+                    <button id="approveBtn" class="btn btn-success">✅ Approve All</button>
+                    <button id="rejectBtn" class="btn btn-danger">❌ Reject All</button>
                   </div>
                 </div>
               </div>
@@ -312,7 +312,6 @@
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            // The API endpoint no longer requires a request body.
           });
           const data = await response.json();
           if (response.ok) this.handleExtractResponse(data);
@@ -328,14 +327,19 @@
         const approvalPanel = document.getElementById('approvalPanel');
         const responseSection = document.getElementById('responseSection');
         const responseContent = document.getElementById('responseContent');
-        // Add this line to store the certificates array from the API response.
         this.certificates = data.raw_certs || [];
         resultsSection.style.display = 'block';
         if (this.certificates.length > 0) this.renderCertificates(this.certificates);
         else {
           certificateList.innerHTML = `<div class="info-card"><h3>📋 Extraction Result</h3><p><strong>Status:</strong> ${data.status}</p><p><strong>Message:</strong> ${data.message}</p></div>`;
         }
-        if (data.status === 'Waiting') approvalPanel.style.display = 'block';
+        if (data.status === 'Waiting') {
+          approvalPanel.style.display = 'block';
+          const allApprovalBtn = document.getElementById('approveBtn');
+          const allRejectBtn = document.getElementById('rejectBtn');
+          if (allApprovalBtn) allApprovalBtn.disabled = false;
+          if (allRejectBtn) allRejectBtn.disabled = false;
+        }
         responseSection.style.display = 'block';
         responseContent.textContent = JSON.stringify(data, null, 2);
       }
@@ -360,6 +364,11 @@
                 <p><strong>DUC ID:</strong> ${cert.duc_id || "N/A"}</p>
                 <p><strong>DUC Make/Model:</strong> ${cert.duc_make_model || "N/A"}</p>
               </div>
+              <div class="mt-4 flex justify-end gap-2">
+                <button class="btn btn-success finalize-btn" data-cert="${cert.certificate_number}">
+                  Finalize
+                </button>
+              </div>
             </div>`;
         }).join('');
         certificateList.innerHTML = `<div class="certificates-header"><h3>📋 Extracted Certificates (${certificates.length})</h3></div><div class="certificates-grid">${cards}</div>`;
@@ -379,25 +388,35 @@
       async finalizeApproval(certNumber) {
         this.setLoading(true);
         try {
-          const response = await fetch(`${this.apiBaseUrl}/approval?certificate_number=${certNumber}`, { method: 'POST' });
+          const response = await fetch(`${this.apiBaseUrl}/approval?user_input=yes&certificate_number=${certNumber}`, { method: 'POST' });
           const data = await response.json();
           if (response.ok) {
             this.showToast(`Certificate ${certNumber} finalized`, 'success');
-            this.updateCertificateStatus('finalized');
+            this.updateCertificateStatus('approved', certNumber);
           } else throw new Error(data.message);
         } catch (e) { this.showToast(`Error: ${e.message}`, 'error'); }
         finally { this.setLoading(false); }
       }
       handleApprovalResponse(data, decision) {
         document.getElementById('approvalPanel').style.display = 'none';
-        this.updateCertificateStatus(decision === 'yes' ? 'approved' : 'rejected');
+        this.updateAllCertificateStatus(decision === 'yes' ? 'approved' : 'rejected');
         document.getElementById('responseContent').textContent = JSON.stringify(data, null, 2);
       }
-      updateCertificateStatus(status) {
-        document.querySelectorAll('.status-badge').forEach(badge => {
-          badge.className = `status-badge ${status}`;
-          badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        });
+      updateAllCertificateStatus(status) {
+        document.querySelectorAll('.status-badge').forEach(badge => {
+          badge.className = `status-badge ${status}`;
+          badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        });
+      }
+      updateCertificateStatus(status, certNumber) {
+        const certCard = document.querySelector(`[data-cert="${certNumber}"]`).closest('.certificate-card');
+        if (certCard) {
+            const badge = certCard.querySelector('.status-badge');
+            if (badge) {
+                badge.className = `status-badge ${status}`;
+                badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+        }
       }
       setLoading(l) {
         this.isLoading = l;
