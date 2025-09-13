@@ -178,6 +178,16 @@
             color: #92400e;
         }
 
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -327,7 +337,7 @@
                 
                 if (data.status === 'Waiting') {
                     statusDiv.innerHTML = `<div class="status-message status-waiting">⏳ ${data.message}</div>`;
-                    currentCertificates = data.certificates || [];
+                    currentCertificates = data.raw_certs || [];
                     
                     // Show approval section
                     approvalSection.style.display = 'block';
@@ -337,7 +347,7 @@
                     
                 } else if (data.status === 'Completed') {
                     statusDiv.innerHTML = `<div class="status-message status-completed">✅ ${data.message}</div>`;
-                    currentCertificates = data.certificates || [];
+                    currentCertificates = data.raw_certs || [];
                     displayCertificates(currentCertificates);
                     approvalSection.style.display = 'none';
                     
