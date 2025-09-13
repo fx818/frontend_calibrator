@@ -362,13 +362,11 @@
             const statusDiv = document.getElementById('extractStatus');
             
             try {
-                const response = await fetch('http://127.0.0.1:8000/approval', {
+                const response = await fetch(`http://127.0.0.1:8000/approval?user_input=${decision}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ "user_input": decision }),
                     mode: 'cors'
                 });
                 
