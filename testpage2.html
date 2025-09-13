@@ -368,7 +368,7 @@
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify(decision),
+                    body: JSON.stringify({ "user_input": decision }),
                     mode: 'cors'
                 });
                 
