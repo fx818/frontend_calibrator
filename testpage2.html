@@ -299,6 +299,10 @@
         let currentCertificates = [];
         let calibratedDataCache = [];
 
+        // Debug function to show current origin
+        console.log('Current origin:', window.location.origin);
+        console.log('Current URL:', window.location.href);
+
         // Extract Certificates
         document.getElementById('extractBtn').addEventListener('click', async () => {
             const btn = document.getElementById('extractBtn');
@@ -310,11 +314,13 @@
             statusDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Extracting certificates...</p></div>';
             
             try {
-                const response = await fetch('/extract_certificates', {
+                const response = await fetch('http://127.0.0.1:8000/extract_certificates', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
                 });
                 
                 const data = await response.json();
@@ -356,12 +362,14 @@
             const statusDiv = document.getElementById('extractStatus');
             
             try {
-                const response = await fetch('/approval', {
+                const response = await fetch('http://127.0.0.1:8000/approval', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     },
-                    body: JSON.stringify(decision)
+                    body: JSON.stringify(decision),
+                    mode: 'cors'
                 });
                 
                 const data = await response.json();
@@ -410,11 +418,13 @@
             dataDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading calibrated data...</p></div>';
             
             try {
-                const response = await fetch('/get_calibrated_data', {
+                const response = await fetch('http://127.0.0.1:8000/get_calibrated_data', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
                 });
                 
                 const result = await response.json();
@@ -483,8 +493,15 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
                 });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
                 
                 const result = await response.json();
                 
@@ -505,6 +522,7 @@
                 setTimeout(() => successMsg.remove(), 3000);
                 
             } catch (error) {
+                console.error('Delete error details:', error);
                 alert(`Error deleting record: ${error.message}`);
             }
         }
