@@ -15,7 +15,7 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4 bg-gray-100">
     <div class="w-full max-w-sm p-8 space-y-8 text-center bg-white rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold text-gray-900">Certificate Extractor</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Certificate Extractor 2</h1>
         <p class="mt-2 text-sm text-gray-500">Log in to continue</p>
 
         <!-- Login Section -->
@@ -40,13 +40,13 @@
 
         // Step 1: Redirect to backend login
         loginBtn.onclick = () => {
-            window.location.href = "http://127.0.0.1:8000/login";
+            window.location.href = "https://7b41ee87f1e7.ngrok-free.app/login";
         };
 
         // Step 2: After page load, check if session exists
         async function checkLogin() {
             try {
-                const res = await fetch("http://127.0.0.1:8000/me", {
+                const res = await fetch("https://7b41ee87f1e7.ngrok-free.app/me", {
                     method: "GET",
                     credentials: "include" // 🔑 send cookies
                 });
