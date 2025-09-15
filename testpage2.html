@@ -275,14 +275,12 @@
         </div>
 
         <div class="content">
-            <!-- Extract Certificates Section -->
             <div class="section">
                 <h2><span class="icon">🔍</span>Extract Certificates</h2>
                 <button id="extractBtn" class="btn">Extract Certificates</button>
                 
                 <div id="extractStatus"></div>
                 
-                <!-- Approval Section (hidden by default) -->
                 <div id="approvalSection" class="approval-section" style="display: none;">
                     <h3>📋 Approval Required</h3>
                     <p id="approvalMessage">Waiting for your approval...</p>
@@ -292,11 +290,9 @@
                     </div>
                 </div>
 
-                <!-- Extracted Certificates Display -->
                 <div id="extractedCertificates"></div>
             </div>
 
-            <!-- Calibrated Data Section -->
             <div class="section">
                 <h2><span class="icon">📊</span>Calibrated Certificates</h2>
                 <button id="loadDataBtn" class="btn">Load Calibrated Data</button>
@@ -395,6 +391,136 @@
             }
         }
 
+        function renderCalibrationCard(cert) {
+            const statusClass = cert.status ? `status-${cert.status.toLowerCase()}` : 'status-pending';
+            return `
+                <div class="certificate-card" style="max-width: none; min-width: 400px;">
+                    <div class="certificate-number">Certificate #${cert.certificate_number || 'Unknown'}</div>
+                    <div class="certificate-status ${statusClass}">${cert.status || 'pending'}</div>
+                    
+                    <div style="margin-top: 15px; font-size: 0.9rem;">
+                        <div style="margin-bottom: 8px;"><strong>Issue Date:</strong> ${cert.issue_date || 'N/A'}</div>
+                        <div style="margin-bottom: 8px;"><strong>Customer:</strong> ${cert.customer_name || 'N/A'}</div>
+                        <div style="margin-bottom: 8px;"><strong>Address:</strong> ${cert.customer_address || 'N/A'}</div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                            <strong>Device Under Calibration (DUC):</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                ID: ${cert.duc_id || 'N/A'}<br>
+                                Serial: ${cert.duc_serial_number || 'N/A'}<br>
+                                Make/Model: ${cert.duc_make_model || 'N/A'}<br>
+                                Range: ${cert.duc_range || 'N/A'}<br>
+                                Least Count: ${cert.duc_least_count || 'N/A'}<br>
+                                Condition: ${cert.duc_condition_at_receipt || 'N/A'}<br>
+                                Location: ${cert.duc_location || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #ecfdf5; border-radius: 8px;">
+                            <strong>Calibration Details:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                Done At: ${cert.calibration_done_at || 'N/A'}<br>
+                                Date: ${cert.calibration_date || 'N/A'}<br>
+                                Next Due: ${cert.calibration_next_due || 'N/A'}<br>
+                                Received: ${cert.calibration_date_received || 'N/A'}<br>
+                                Procedure: ${cert.calibration_procedure_references_types || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #fef3c7; border-radius: 8px;">
+                            <strong>Standard Equipment:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                ID: ${cert.standard_equipment_id || 'N/A'}<br>
+                                Name: ${cert.standard_equipment_name || 'N/A'}<br>
+                                Serial: ${cert.standard_equipment_serial_number || 'N/A'}<br>
+                                Cert #: ${cert.standard_equipment_certificate_number || 'N/A'}<br>
+                                Cal Date: ${cert.standard_equipment_calibration_date || 'N/A'}<br>
+                                Due Date: ${cert.standard_equipment_calibration_due_date || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        ${cert.result_duc_value || cert.result_std_value || cert.result_error || cert.result_expanded_uncertainty ? `
+                        <div style="margin: 15px 0; padding: 10px; background: #fce7f3; border-radius: 8px;">
+                            <strong>Results:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                DUC Value: ${cert.result_duc_value || 'N/A'}<br>
+                                STD Value: ${cert.result_std_value || 'N/A'}<br>
+                                Error: ${cert.result_error || 'N/A'}<br>
+                                Expanded Uncertainty: ${cert.result_expanded_uncertainty || 'N/A'}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 15px;">
+                            <div style="margin-bottom: 5px;"><strong>Remarks:</strong> ${cert.remarks || 'None'}</div>
+                        </div>
+                        
+                        ${cert.notes ? `
+                        <div style="margin-top: 10px; padding: 8px; background: #e0e7ff; border-radius: 8px; font-size: 0.8rem;">
+                            <strong>Notes:</strong><br>
+                            <div style="margin-top: 5px; white-space: pre-line;">${cert.notes}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWarrantyCard(claim) {
+            const statusClass = claim.status ? `status-${claim.status.toLowerCase()}` : 'status-pending';
+            return `
+                <div class="certificate-card" style="max-width: none; min-width: 400px;">
+                    <div class="certificate-number">Warranty Claim #${claim.warranty_claim_no || 'Unknown'}</div>
+                    <div class="certificate-status ${statusClass}">${claim.status || 'pending'}</div>
+
+                    <div style="margin-top: 15px; font-size: 0.9rem;">
+                        <div style="margin-bottom: 8px;"><strong>Claim Date:</strong> ${claim.claim_date || 'N/A'}</div>
+                        <div style="margin-bottom: 8px;"><strong>PO No:</strong> ${claim.po_contract_no || 'N/A'}</div>
+                        <div style="margin-bottom: 8px;"><strong>Supplier:</strong> ${claim.supplier_name || 'N/A'}</div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
+                            <strong>Product Details:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                Description: ${claim.description || 'N/A'}<br>
+                                Make/Brand: ${claim.make_brand || 'N/A'}<br>
+                                Batch/Sl. No.: ${claim.batch_product_slno || 'N/A'}<br>
+                                Warranty Period: ${claim.warranty_period || 'N/A'}
+                            </div>
+                        </div>
+
+                        <div style="margin: 15px 0; padding: 10px; background: #ecfdf5; border-radius: 8px;">
+                            <strong>Rejection Details:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                Qty Rejected: ${claim.qty_rejected || 'N/A'}<br>
+                                Reason: ${claim.reason_of_rejection || 'N/A'}
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #fef3c7; border-radius: 8px;">
+                            <strong>Financials:</strong><br>
+                            <div style="margin-left: 10px; margin-top: 5px;">
+                                Rate per Unit: ${claim.rate_per_unit || 'N/A'}<br>
+                                Claim Amount: ${claim.claim_amount || 'N/A'}<br>
+                                Recovery Advice: ${claim.recovery_advice || 'N/A'}
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <div style="margin-bottom: 5px;"><strong>Remarks:</strong> ${claim.remarks || 'None'}</div>
+                        </div>
+                        
+                        ${claim.signatories ? `
+                        <div style="margin-top: 10px; padding: 8px; background: #e0e7ff; border-radius: 8px; font-size: 0.8rem;">
+                            <strong>Signatories:</strong><br>
+                            <div style="margin-top: 5px; white-space: pre-line;">${claim.signatories}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+
         function displayCertificates(certificates) {
             const container = document.getElementById('extractedCertificates');
             
@@ -403,80 +529,19 @@
                 return;
             }
             
+            const certificateCardsHtml = certificates.map(cert => {
+                if (cert.intent === 'calibration_certificate') {
+                    return renderCalibrationCard(cert);
+                } else if (cert.intent === 'Warranty_claim') {
+                    return renderWarrantyCard(cert);
+                }
+                return ''; // Return empty string for unknown intent
+            }).join('');
+            
             container.innerHTML = `
                 <h3 style="margin: 20px 0;">Extracted Certificates (${certificates.length})</h3>
                 <div class="certificate-grid">
-                    ${certificates.map(cert => `
-                        <div class="certificate-card" style="max-width: none; min-width: 400px;">
-                            <div class="certificate-number">Certificate #${cert.certificate_number || 'Unknown'}</div>
-                            <div class="certificate-status status-${cert.status || 'pending'}">${cert.status || 'pending'}</div>
-                            
-                            <div style="margin-top: 15px; font-size: 0.9rem;">
-                                <div style="margin-bottom: 8px;"><strong>Issue Date:</strong> ${cert.issue_date || 'N/A'}</div>
-                                <div style="margin-bottom: 8px;"><strong>Customer:</strong> ${cert.customer_name || 'N/A'}</div>
-                                <div style="margin-bottom: 8px;"><strong>Address:</strong> ${cert.customer_address || 'N/A'}</div>
-                                
-                                <div style="margin: 15px 0; padding: 10px; background: #f1f5f9; border-radius: 8px;">
-                                    <strong>Device Under Calibration (DUC):</strong><br>
-                                    <div style="margin-left: 10px; margin-top: 5px;">
-                                        ID: ${cert.duc_id || 'N/A'}<br>
-                                        Serial: ${cert.duc_serial_number || 'N/A'}<br>
-                                        Make/Model: ${cert.duc_make_model || 'N/A'}<br>
-                                        Range: ${cert.duc_range || 'N/A'}<br>
-                                        Least Count: ${cert.duc_least_count || 'N/A'}<br>
-                                        Condition: ${cert.duc_condition_at_receipt || 'N/A'}<br>
-                                        Location: ${cert.duc_location || 'N/A'}
-                                    </div>
-                                </div>
-                                
-                                <div style="margin: 15px 0; padding: 10px; background: #ecfdf5; border-radius: 8px;">
-                                    <strong>Calibration Details:</strong><br>
-                                    <div style="margin-left: 10px; margin-top: 5px;">
-                                        Done At: ${cert.calibration_done_at || 'N/A'}<br>
-                                        Date: ${cert.calibration_date || 'N/A'}<br>
-                                        Next Due: ${cert.calibration_next_due || 'N/A'}<br>
-                                        Received: ${cert.calibration_date_received || 'N/A'}<br>
-                                        Procedure: ${cert.calibration_procedure_references_types || 'N/A'}
-                                    </div>
-                                </div>
-                                
-                                <div style="margin: 15px 0; padding: 10px; background: #fef3c7; border-radius: 8px;">
-                                    <strong>Standard Equipment:</strong><br>
-                                    <div style="margin-left: 10px; margin-top: 5px;">
-                                        ID: ${cert.standard_equipment_id || 'N/A'}<br>
-                                        Name: ${cert.standard_equipment_name || 'N/A'}<br>
-                                        Serial: ${cert.standard_equipment_serial_number || 'N/A'}<br>
-                                        Cert #: ${cert.standard_equipment_certificate_number || 'N/A'}<br>
-                                        Cal Date: ${cert.standard_equipment_calibration_date || 'N/A'}<br>
-                                        Due Date: ${cert.standard_equipment_calibration_due_date || 'N/A'}
-                                    </div>
-                                </div>
-                                
-                                ${cert.result_duc_value || cert.result_std_value || cert.result_error || cert.result_expanded_uncertainty ? `
-                                <div style="margin: 15px 0; padding: 10px; background: #fce7f3; border-radius: 8px;">
-                                    <strong>Results:</strong><br>
-                                    <div style="margin-left: 10px; margin-top: 5px;">
-                                        DUC Value: ${cert.result_duc_value || 'N/A'}<br>
-                                        STD Value: ${cert.result_std_value || 'N/A'}<br>
-                                        Error: ${cert.result_error || 'N/A'}<br>
-                                        Expanded Uncertainty: ${cert.result_expanded_uncertainty || 'N/A'}
-                                    </div>
-                                </div>
-                                ` : ''}
-                                
-                                <div style="margin-top: 15px;">
-                                    <div style="margin-bottom: 5px;"><strong>Remarks:</strong> ${cert.remarks || 'None'}</div>
-                                </div>
-                                
-                                ${cert.notes ? `
-                                <div style="margin-top: 10px; padding: 8px; background: #e0e7ff; border-radius: 8px; font-size: 0.8rem;">
-                                    <strong>Notes:</strong><br>
-                                    <div style="margin-top: 5px; white-space: pre-line;">${cert.notes}</div>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `).join('')}
+                    ${certificateCardsHtml}
                 </div>
             `;
         }
