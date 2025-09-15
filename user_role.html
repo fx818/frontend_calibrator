@@ -257,18 +257,24 @@
                 }
         
                 const data = await response.json();
+                console.log('Response data:', data); // Debug log
                 
-                if (data.success && data.redirect_url) {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                if (data.success) {
                     showMessage(data.message || `Role successfully set to: ${selectedRole}`, 'success');
                     
-                    // Redirect after showing success message for 2 seconds
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url;
-                    }, 2000);
-                } else if (data.error) {
-                    throw new Error(data.error);
+                    // Check if redirect_url exists and redirect
+                    if (data.redirect_url) {
+                        console.log('Redirecting to:', data.redirect_url); // Debug log
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500); // Reduced timeout for faster redirect
+                    }
                 } else {
-                    showMessage(data.message || `Role successfully set to: ${selectedRole}`, 'success');
+                    showMessage(data.message || `Role set to: ${selectedRole}`, 'success');
                 }
                 
             } catch (error) {
