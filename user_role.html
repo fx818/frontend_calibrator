@@ -218,7 +218,7 @@
         const submitBtn = document.getElementById('submitBtn');
         const messageDiv = document.getElementById('message');
         const apiUrlInput = document.getElementById('apiUrl');
-
+        const API_BASE_URL = "http://127.0.0.1:8000"
         function showMessage(text, type = 'success') {
             messageDiv.textContent = text;
             messageDiv.className = `message ${type} show`;
