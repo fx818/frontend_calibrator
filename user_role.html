@@ -241,7 +241,7 @@
         async function submitRole(selectedRole) {
             try {
                 showLoading();
-                const API_BASE_URL="http://127.0.0.1:8000";
+                
                 // Build URL with role as query parameter
                 const url = `${API_BASE_URL}/define_role?role=${encodeURIComponent(selectedRole)}`;
                 
@@ -249,16 +249,48 @@
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
-                    }
+                    },
+                    redirect: 'manual' // Don't follow redirects automatically
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // Handle redirect response (302)
+                if (response.status === 302) {
+                    showMessage(`Role successfully set to: ${selectedRole}. Redirecting...`, 'success');
+                    
+                    // Get redirect URL from Location header
+                    const redirectUrl = response.headers.get('Location');
+                    
+                    // Redirect after showing success message for 2 seconds
+                    setTimeout(() => {
+                        if (redirectUrl) {
+                            window.location.href = redirectUrl;
+                        } else {
+                            // Fallback if Location header is not available
+                            window.location.reload();
+                        }
+                    }, 2000);
+                    return;
                 }
 
-                const data = await response.json();
-                
-                showMessage(data.message || `Role successfully set to: ${selectedRole}`, 'success');
+                // Handle other responses
+                if (!response.ok) {
+                    // Try to parse error message if it's JSON
+                    try {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    } catch (jsonError) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+
+                // If we get here, try to parse JSON response
+                try {
+                    const data = await response.json();
+                    showMessage(data.message || `Role successfully set to: ${selectedRole}`, 'success');
+                } catch (jsonError) {
+                    // If JSON parsing fails but status is ok, assume success
+                    showMessage(`Role successfully set to: ${selectedRole}`, 'success');
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
